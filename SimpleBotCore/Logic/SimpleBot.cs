@@ -1,4 +1,6 @@
-﻿using SimpleBotCore.Bot;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using SimpleBotCore.Bot;
 using SimpleBotCore.Repositories;
 using System;
 using System.Collections.Generic;
@@ -10,9 +12,11 @@ namespace SimpleBotCore.Logic
     public class SimpleBot : BotDialog
     {
         IUserProfileRepository _userProfile;
+        IMongoDatabase _dbMongo;
 
         public SimpleBot(IUserProfileRepository userProfile)
         {
+            _dbMongo = GetDatabase();
             _userProfile = userProfile;
         }
 
@@ -74,6 +78,7 @@ namespace SimpleBotCore.Logic
                     await WriteAsync("Processando...");
 
                     // FAZER: GRAVAR AS PERGUNTAS EM UM BANCO DE DADOS
+                    GravarMensagem(texto);
                     await Task.Delay(5000);
 
                     await WriteAsync("Resposta não encontrada");
@@ -83,6 +88,22 @@ namespace SimpleBotCore.Logic
                     await WriteAsync("Você disse: " + texto);
                 }
             }
+        }
+
+        public async void GravarMensagem(string texto)
+        {
+            
+            var col = _dbMongo.GetCollection<BsonDocument>("message");
+            var docMessage = BsonDocument.Parse("{ Mensagem: '" + texto + "' }");
+            col.InsertOne(docMessage);
+        }
+
+        private IMongoDatabase GetDatabase()
+        {
+            string conString = "mongodb://localhost:27017";
+            var mongoClient = new MongoClient(conString);
+
+            return mongoClient.GetDatabase("dbLogMessages");
         }
     }
 }
