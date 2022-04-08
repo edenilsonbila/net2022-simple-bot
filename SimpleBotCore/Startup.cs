@@ -27,9 +27,19 @@ namespace SimpleBotCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IUserProfileRepository>(new UserProfileMockRepository());
+            string mongoConString = Configuration["MongoDbConfig:Host"];
+            string sgbd = Configuration["AppConfig:SGBD"];
+
+            if (sgbd == "mongo")
+                services.AddSingleton<IUserProfileRepository>(new UserProfileMongoRepository(mongoConString));
+            else
+                services.AddSingleton<IUserProfileRepository>(new UserProfileMockRepository());
+
+            services.AddSingleton<IMessageRepository>(new MessageRepository(mongoConString));
             services.AddSingleton<IBotDialogHub, BotDialogHub>();
             services.AddSingleton<BotDialog, SimpleBot>();
+            services.AddSingleton<IMessageRepository>(new MessageRepository(mongoConString));
+
 
             services.AddControllers();
         }

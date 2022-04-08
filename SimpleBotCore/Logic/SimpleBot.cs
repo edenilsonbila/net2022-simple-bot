@@ -12,12 +12,14 @@ namespace SimpleBotCore.Logic
     public class SimpleBot : BotDialog
     {
         IUserProfileRepository _userProfile;
+        IMessageRepository _messageRepository;
         IMongoDatabase _dbMongo;
 
-        public SimpleBot(IUserProfileRepository userProfile)
+        public SimpleBot(IUserProfileRepository userProfile, IMessageRepository messageRepository)
         {
             _dbMongo = GetDatabase();
             _userProfile = userProfile;
+            _messageRepository = messageRepository;
         }
 
         protected async override Task BotConversation()
@@ -78,7 +80,8 @@ namespace SimpleBotCore.Logic
                     await WriteAsync("Processando...");
 
                     // FAZER: GRAVAR AS PERGUNTAS EM UM BANCO DE DADOS
-                    GravarMensagem(texto);
+                    _messageRepository.InsereMensagem(new Message() {  Mensagem = texto });
+
                     await Task.Delay(5000);
 
                     await WriteAsync("Resposta não encontrada");
@@ -92,7 +95,6 @@ namespace SimpleBotCore.Logic
 
         public async void GravarMensagem(string texto)
         {
-            
             var col = _dbMongo.GetCollection<BsonDocument>("message");
             var docMessage = BsonDocument.Parse("{ Mensagem: '" + texto + "' }");
             col.InsertOne(docMessage);
