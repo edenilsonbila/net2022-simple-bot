@@ -1,22 +1,22 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using SimpleBotCore.Data;
 using SimpleBotCore.Logic;
 
 namespace SimpleBotCore.Repositories
 {
-    public class MessageRepository : IMessageRepository
+    public class MessageSqlRepository : IMessageRepository
     {
-        IMongoDatabase _dbMongo;
-
-        public MessageRepository(string conString)
+        private Context _context;
+        public MessageSqlRepository(Context context)
         {
-            _dbMongo = new MongoClient(conString).GetDatabase("dbLogMessages");
+            context = _context;
         }
 
         public void InsereMensagem(Message message)
         {
-            var col = _dbMongo.GetCollection<Message>("message");
-            col.InsertOne(message);
+            _context.Messages.Add(message);
+            _context.SaveChanges();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using SimpleBotCore.Data;
 using SimpleBotCore.Logic;
 using System;
 using System.Collections.Generic;
@@ -8,20 +9,18 @@ using System.Threading.Tasks;
 
 namespace SimpleBotCore.Repositories
 {
-    public class UserProfileMongoRepository : IUserProfileRepository
+    public class UserProfileSqlRepository : IUserProfileRepository
     {
-        IMongoDatabase _dbMongo;
-        IMongoCollection<SimpleUser> _userCollection;
+        private Context _context;
 
-        public UserProfileMongoRepository(string conString)
+        public UserProfileSqlRepository(Context context)
         {
-            _dbMongo = new MongoClient(conString).GetDatabase("dbLogMessages");
-            _userCollection = _dbMongo.GetCollection<SimpleUser>("user");
+            _context = context;
         }
 
         public SimpleUser TryLoadUser(string userId)
         {
-            if( Exists(userId) )
+            if (Exists(userId))
             {
                 return GetUser(userId);
             }
@@ -31,7 +30,7 @@ namespace SimpleBotCore.Repositories
 
         public SimpleUser Create(SimpleUser user)
         {
-            if ( Exists(user.Id) )
+            if (Exists(user.Id))
                 throw new InvalidOperationException("Usuário ja existente");
 
             SaveUser(user);
@@ -51,9 +50,7 @@ namespace SimpleBotCore.Repositories
 
             user.Nome = name;
 
-            var update = Builders<SimpleUser>.Update.Set(s => s.Nome, name);
-
-            UpdateUser(userId, update);
+            UpdateUser(user);
         }
 
         public void AtualizaIdade(string userId, int idade)
@@ -68,9 +65,7 @@ namespace SimpleBotCore.Repositories
 
             user.Idade = idade;
 
-            var update = Builders<SimpleUser>.Update.Set(s => s.Idade, idade);
-
-            UpdateUser(userId, update);
+            UpdateUser(user);
         }
 
         public void AtualizaCor(string userId, string cor)
@@ -83,31 +78,31 @@ namespace SimpleBotCore.Repositories
 
             var user = GetUser(userId);
 
-            var update = Builders<SimpleUser>.Update.Set(s => s.Cor, cor);
+            user.Cor = cor;
 
-            UpdateUser(userId, update);
+            UpdateUser(user);
         }
 
         private bool Exists(string userId)
         {
-            return _userCollection.Find(_ => _.Id == userId).Any();
+            return _context.SimpleUsers.Any(_ => _.Id == userId);
         }
 
         private SimpleUser GetUser(string userId)
         {
-            var user =  _userCollection.Find(x => x.Id == userId).FirstOrDefault();
-            return user;
+            return _context.SimpleUsers.Find(userId);
         }
 
         private void SaveUser(SimpleUser user)
         {
-            _userCollection.InsertOne(user);
+            _context.SimpleUsers.Add(user);
+            _context.SaveChanges();
         }
 
-        private void UpdateUser(string userId, UpdateDefinition<SimpleUser> update)
+        private void UpdateUser(SimpleUser user)
         {
-            var result = _userCollection.UpdateOne(e => e.Id == userId, update);
-            var a = result.ModifiedCount;
+            _context.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.SaveChanges();
         }
     }
 }

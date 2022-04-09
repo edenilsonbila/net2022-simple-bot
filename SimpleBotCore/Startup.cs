@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SimpleBotCore.Bot;
+using SimpleBotCore.Data;
 using SimpleBotCore.Logic;
 using SimpleBotCore.Repositories;
 using System;
@@ -31,14 +32,25 @@ namespace SimpleBotCore
             string sgbd = Configuration["AppConfig:SGBD"];
 
             if (sgbd == "mongo")
+            {
                 services.AddSingleton<IUserProfileRepository>(new UserProfileMongoRepository(mongoConString));
+                services.AddSingleton<IMessageRepository>(new MessageRepository(mongoConString));
+            }
+            else if (sgbd == "sqlserver")
+            {
+                services.AddSingleton<Context>();
+                services.AddSingleton<IUserProfileRepository, UserProfileSqlRepository>();
+                services.AddSingleton<IMessageRepository, MessageSqlRepository>();
+            }
             else
+            {
                 services.AddSingleton<IUserProfileRepository>(new UserProfileMockRepository());
+            }
 
-            services.AddSingleton<IMessageRepository>(new MessageRepository(mongoConString));
+
             services.AddSingleton<IBotDialogHub, BotDialogHub>();
             services.AddSingleton<BotDialog, SimpleBot>();
-            services.AddSingleton<IMessageRepository>(new MessageRepository(mongoConString));
+
 
 
             services.AddControllers();
