@@ -46,6 +46,7 @@ namespace SimpleBotCore
             else
             {
                 services.AddSingleton<IUserProfileRepository>(new UserProfileMockRepository());
+                services.AddSingleton<IMessageRepository>(new MessageMockRepository());
             }
 
 
