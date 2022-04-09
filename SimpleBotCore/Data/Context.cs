@@ -13,13 +13,15 @@ namespace SimpleBotCore.Data
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("SqlServer"));
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString(_configuration["AppConfig:SGBD"]));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SimpleUser>().HasNoKey();
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<SimpleUser>().HasKey(x => x.Id);
+            modelBuilder.Entity<SimpleUser>().Property(x => x.Id).HasMaxLength(50);
+            
+            modelBuilder.Entity<Message>().Property(x => x.Id).HasMaxLength(50);
         }
 
         public DbSet<SimpleUser> SimpleUsers { get; set; }

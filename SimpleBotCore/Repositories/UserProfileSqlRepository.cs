@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using SimpleBotCore.Data;
 using SimpleBotCore.Logic;
@@ -85,7 +86,7 @@ namespace SimpleBotCore.Repositories
 
         private bool Exists(string userId)
         {
-            return _context.SimpleUsers.Any(_ => _.Id == userId);
+            return _context.SimpleUsers.Any(x => x.Id == userId);
         }
 
         private SimpleUser GetUser(string userId)

@@ -11,7 +11,6 @@ namespace SimpleBotCore.Logic
     public class SimpleUser
     {
         [BsonElement("_id")]
-        [Key]
         public string Id { get; }
         public string Nome { get; set; }
         public int Idade { get; set; }

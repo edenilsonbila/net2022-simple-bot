@@ -82,8 +82,6 @@ namespace SimpleBotCore.Logic
                     // FAZER: GRAVAR AS PERGUNTAS EM UM BANCO DE DADOS
                     _messageRepository.InsereMensagem(new Message() {  Mensagem = texto });
 
-                    await Task.Delay(5000);
-
                     await WriteAsync("Resposta não encontrada");
                 }
                 else
@@ -91,13 +89,6 @@ namespace SimpleBotCore.Logic
                     await WriteAsync("Você disse: " + texto);
                 }
             }
-        }
-
-        public async void GravarMensagem(string texto)
-        {
-            var col = _dbMongo.GetCollection<BsonDocument>("message");
-            var docMessage = BsonDocument.Parse("{ Mensagem: '" + texto + "' }");
-            col.InsertOne(docMessage);
         }
 
         private IMongoDatabase GetDatabase()
